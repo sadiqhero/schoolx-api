@@ -1,0 +1,33 @@
+{
+  "name": "schoolx-api",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch --env-file=.env.local server.ts",
+    "build": "next build",
+    "start": "NODE_ENV=production node server.ts",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^17.4.2",
+    "jsonwebtoken": "9.0.2",
+    "mongodb": "6.5.0",
+    "next": "14.2.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "socket.io": "4.7.5",
+    "zod": "3.22.4"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/node": "^20.12.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "^14.2.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.4.0"
+  }
+}
