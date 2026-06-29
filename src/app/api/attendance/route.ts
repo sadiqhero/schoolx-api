@@ -72,20 +72,24 @@ export async function POST(request: NextRequest) {
       date: validation.data.date,
     });
 
-    let result;
-    if (existing) {
-      result = await db.collection<Attendance>('attendance').updateOne(
-        { _id: existing._id },
-        { $set: { ...validation.data, updatedAt: new Date() } }
-      );
-    } else {
-      const newAttendance: Attendance = {
-        ...validation.data,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      result = await db.collection<Attendance>('attendance').insertOne(newAttendance);
-    }
+   let result;
+let attendanceId: string;
+
+if (existing) {
+  result = await db.collection<Attendance>('attendance').updateOne(
+    { _id: existing._id },
+    { $set: { ...validation.data, updatedAt: new Date() } }
+  );
+  attendanceId = existing._id!.toString();
+} else {
+  const newAttendance: Attendance = {
+    ...validation.data,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+  result = await db.collection<Attendance>('attendance').insertOne(newAttendance);
+  attendanceId = result.insertedId.toString();
+}
 
     const io = getSocketServer();
     if (io) {
@@ -98,9 +102,10 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({
-      success: true,
-      data: { id: existing ? existing._id!.toString() : result.insertedId.toString() },
-    });
+  success: true,
+  data: { id: attendanceId },
+});
+    
   } catch (error) {
     console.error('Create attendance error:', error);
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
