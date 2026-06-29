@@ -4,7 +4,6 @@ import { announcementSchema } from '@/lib/validation';
 import { Announcement } from '@/models';
 import { ObjectId } from 'mongodb';
 import { verifyToken, extractTokenFromHeader } from '@/lib/auth';
-import { getSocketServer } from '@/lib/socket';
 
 async function authenticate(request: NextRequest) {
   const authHeader = request.headers.get('authorization');
@@ -80,11 +79,6 @@ export async function POST(request: NextRequest) {
     };
 
     const result = await db.collection<Announcement>('announcements').insertOne(newAnnouncement);
-
-    const io = getSocketServer();
-    if (io) {
-      io.emit('announcement:new', { ...newAnnouncement, _id: result.insertedId.toString() });
-    }
 
     return NextResponse.json({
       success: true,

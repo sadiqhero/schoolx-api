@@ -90,16 +90,6 @@ if (existing) {
   attendanceId = result.insertedId.toString();
 }
 
-    // const io = getSocketServer();
-    // if (io) {
-    //   io.emit('attendance:updated', { 
-    //     studentId: validation.data.studentId, 
-    //     class: validation.data.class, 
-    //     date: validation.data.date,
-    //     status: validation.data.status 
-    //   });
-    // }
-
     return NextResponse.json({
   success: true,
   data: { id: attendanceId },
