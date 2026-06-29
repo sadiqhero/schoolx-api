@@ -4,7 +4,6 @@ import { attendanceSchema } from '@/lib/validation';
 import { Attendance } from '@/models';
 import { ObjectId } from 'mongodb';
 import { verifyToken, extractTokenFromHeader } from '@/lib/auth';
-import { getSocketServer } from '@/lib/socket';
 
 async function authenticate(request: NextRequest) {
   const authHeader = request.headers.get('authorization');
@@ -91,15 +90,15 @@ if (existing) {
   attendanceId = result.insertedId.toString();
 }
 
-    const io = getSocketServer();
-    if (io) {
-      io.emit('attendance:updated', { 
-        studentId: validation.data.studentId, 
-        class: validation.data.class, 
-        date: validation.data.date,
-        status: validation.data.status 
-      });
-    }
+    // const io = getSocketServer();
+    // if (io) {
+    //   io.emit('attendance:updated', { 
+    //     studentId: validation.data.studentId, 
+    //     class: validation.data.class, 
+    //     date: validation.data.date,
+    //     status: validation.data.status 
+    //   });
+    // }
 
     return NextResponse.json({
   success: true,

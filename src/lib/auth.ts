@@ -1,12 +1,15 @@
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import jwt, { type SignOptions } from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET) {
-  throw new Error('JWT_SECRET environment variable is not set');
-}
+const JWT_SECRET: string = (() => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('JWT_SECRET environment variable is not set');
+  }
+  return secret;
+})();
 
-const JWT_EXPIRES_IN = '7d';
+const JWT_EXPIRES_IN: SignOptions['expiresIn'] = '7d';
 
 export async function hashPassword(password: string): Promise<string> {
   const saltRounds = 12;
@@ -29,7 +32,9 @@ export function generateToken(payload: JWTPayload): string {
 
 export function verifyToken(token: string): JWTPayload | null {
   try {
-    return jwt.verify(token, JWT_SECRET) as JWTPayload;
+    const decoded = jwt.verify(token, JWT_SECRET);
+    if (typeof decoded === 'string' || !decoded) return null;
+    return decoded as unknown as JWTPayload;
   } catch {
     return null;
   }
