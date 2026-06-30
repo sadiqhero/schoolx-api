@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { verifyToken, extractTokenFromHeader } from '@/lib/auth';
+import { verifyToken, extractTokenFromRequest } from '@/lib/auth';
 
 const publicPaths = [
   '/api/auth/login',
   '/api/auth/register',
-  '/api/socket',
 ];
 
 export function middleware(request: NextRequest) {
@@ -16,8 +15,7 @@ export function middleware(request: NextRequest) {
   }
 
   if (pathname.startsWith('/api/')) {
-    const authHeader = request.headers.get('authorization');
-    const token = extractTokenFromHeader(authHeader);
+    const token = extractTokenFromRequest(request);
 
     if (!token) {
       return NextResponse.json(

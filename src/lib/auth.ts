@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import jwt, { type SignOptions } from 'jsonwebtoken';
+import type { NextRequest } from 'next/server';
 
 const JWT_SECRET: string = (() => {
   const secret = process.env.JWT_SECRET;
@@ -45,4 +46,20 @@ export function extractTokenFromHeader(authHeader: string | null): string | null
     return null;
   }
   return authHeader.slice(7);
+}
+
+export function extractTokenFromRequest(request: NextRequest): string | null {
+  // First check Authorization header
+  const authHeader = request.headers.get('authorization');
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    return authHeader.slice(7);
+  }
+  
+  // Then check cookies
+  const tokenCookie = request.cookies.get('token');
+  if (tokenCookie) {
+    return tokenCookie.value;
+  }
+  
+  return null;
 }

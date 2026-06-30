@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/mongodb';
-import { verifyToken, extractTokenFromHeader } from '@/lib/auth';
+import { verifyToken, extractTokenFromRequest } from '@/lib/auth';
 import { User } from '@/models';
 import { ObjectId } from 'mongodb';
 
 export async function GET(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization');
-    const token = extractTokenFromHeader(authHeader);
+    const token = extractTokenFromRequest(request);
 
     if (!token) {
       return NextResponse.json(

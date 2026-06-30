@@ -3,11 +3,10 @@ import { getDb } from '@/lib/mongodb';
 import { studentSchema } from '@/lib/validation';
 import { Student } from '@/models';
 import { ObjectId } from 'mongodb';
-import { verifyToken, extractTokenFromHeader } from '@/lib/auth';
+import { verifyToken, extractTokenFromRequest } from '@/lib/auth';
 
 async function authenticate(request: NextRequest) {
-  const authHeader = request.headers.get('authorization');
-  const token = extractTokenFromHeader(authHeader);
+  const token = extractTokenFromRequest(request);
   if (!token) return null;
   return verifyToken(token);
 }
