@@ -1,20 +1,17 @@
+import { SignJWT, jwtVerify } from 'jose';
 import bcrypt from 'bcryptjs';
-import jwt, { type SignOptions } from 'jsonwebtoken';
 import type { NextRequest } from 'next/server';
 
-const JWT_SECRET: string = (() => {
+const JWT_SECRET = (() => {
   const secret = process.env.JWT_SECRET;
-  if (!secret) {
-    throw new Error('JWT_SECRET environment variable is not set');
-  }
-  return secret;
+  if (!secret) throw new Error('JWT_SECRET environment variable is not set');
+  return new TextEncoder().encode(secret); // jose needs Uint8Array, not a string
 })();
 
-const JWT_EXPIRES_IN: SignOptions['expiresIn'] = '7d';
+const JWT_EXPIRES_IN = '7d';
 
 export async function hashPassword(password: string): Promise<string> {
-  const saltRounds = 12;
-  return bcrypt.hash(password, saltRounds);
+  return bcrypt.hash(password, 12);
 }
 
 export async function verifyPassword(password: string, hash: string): Promise<boolean> {
@@ -27,40 +24,33 @@ export interface JWTPayload {
   role: string;
 }
 
-export function generateToken(payload: JWTPayload): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+// generateToken is now async
+export async function generateToken(payload: JWTPayload): Promise<string> {
+  return new SignJWT({ ...payload })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime(JWT_EXPIRES_IN)
+    .sign(JWT_SECRET);
 }
 
-export function verifyToken(token: string): JWTPayload | null {
+// verifyToken is now async
+export async function verifyToken(token: string): Promise<JWTPayload | null> {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    if (typeof decoded === 'string' || !decoded) return null;
-    return decoded as unknown as JWTPayload;
-  } catch (err: any) {         // 👈 change `catch {` to `catch (err: any) {`
-    console.error('JWT verify error:', err.message);  // 👈 add this line
+    const { payload } = await jwtVerify(token, JWT_SECRET);
+    return payload as unknown as JWTPayload;
+  } catch (err: any) {
+    console.error('JWT verify error:', err.message);
     return null;
   }
-}
-
-export function extractTokenFromHeader(authHeader: string | null): string | null {
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return null;
-  }
-  return authHeader.slice(7);
 }
 
 export function extractTokenFromRequest(request: NextRequest): string | null {
-  // First check Authorization header
   const authHeader = request.headers.get('authorization');
-  if (authHeader && authHeader.startsWith('Bearer ')) {
+  if (authHeader?.startsWith('Bearer ')) {
     return authHeader.slice(7);
   }
-  
-  // Then check cookies
   const tokenCookie = request.cookies.get('token');
-  if (tokenCookie) {
-    return tokenCookie.value;
-  }
-  
-  return null;
+  return tokenCookie?.value ?? null;
 }
+
+

@@ -7,7 +7,7 @@ const publicPaths = [
   '/api/auth/register',
 ];
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (publicPaths.some(path => pathname.startsWith(path))) {
@@ -24,7 +24,7 @@ export function middleware(request: NextRequest) {
       );
     }
 
-    const payload = verifyToken(token);
+    const payload = await verifyToken(token);
 
     if (!payload) {
       return NextResponse.json(

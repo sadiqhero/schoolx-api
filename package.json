@@ -11,7 +11,7 @@
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "dotenv": "^17.4.2",
-    "jsonwebtoken": "9.0.2",
+    "jose": "^6.2.3",
     "mongodb": "6.5.0",
     "next": "14.2.0",
     "react": "18.2.0",
@@ -20,7 +20,6 @@
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
-    "@types/jsonwebtoken": "^9.0.6",
     "@types/node": "^20.12.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",

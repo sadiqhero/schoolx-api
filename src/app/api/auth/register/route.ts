@@ -1,4 +1,3 @@
-export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/mongodb';
@@ -50,7 +49,7 @@ export async function POST(request: NextRequest) {
       role,
     };
 
-    const token = generateToken(payload);
+    const token = await generateToken(payload);
 
     const response = NextResponse.json({
       success: true,
