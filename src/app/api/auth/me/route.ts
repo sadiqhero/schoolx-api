@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getDb } from '@/lib/mongodb';
-import { verifyToken, extractTokenFromRequest } from '@/lib/auth';
-import { User } from '@/models';
-import { ObjectId } from 'mongodb';
+export const dynamic = "force-dynamic";
+import { NextRequest, NextResponse } from "next/server";
+import { getDb } from "@/lib/mongodb";
+import { verifyToken, extractTokenFromRequest } from "@/lib/auth";
+import { User } from "@/models";
+import { ObjectId } from "mongodb";
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,8 +11,8 @@ export async function GET(request: NextRequest) {
 
     if (!token) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
+        { success: false, error: "Unauthorized" },
+        { status: 401 },
       );
     }
 
@@ -19,21 +20,23 @@ export async function GET(request: NextRequest) {
 
     if (!payload) {
       return NextResponse.json(
-        { success: false, error: 'Invalid or expired token' },
-        { status: 401 }
+        { success: false, error: "Invalid or expired token" },
+        { status: 401 },
       );
     }
 
     const db = await getDb();
-    const user = await db.collection<User>('users').findOne(
-      { _id: new ObjectId(payload.userId) },
-      { projection: { password: 0 } }
-    );
+    const user = await db
+      .collection<User>("users")
+      .findOne(
+        { _id: new ObjectId(payload.userId) },
+        { projection: { password: 0 } },
+      );
 
     if (!user) {
       return NextResponse.json(
-        { success: false, error: 'User not found' },
-        { status: 404 }
+        { success: false, error: "User not found" },
+        { status: 404 },
       );
     }
 
@@ -47,10 +50,10 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Me error:', error);
+    console.error("Me error:", error);
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
+      { success: false, error: "Internal server error" },
+      { status: 500 },
     );
   }
 }
