@@ -21,35 +21,23 @@ export async function GET(request: NextRequest) {
 
     const db = await getDb();
     const searchParams = request.nextUrl.searchParams;
-    
-    const target = searchParams.get('audience') || 'all';
+
+    // matches the client's actual param name (was previously mismatched with 'target')
+    const audience = searchParams.get('audience');
     const limit = parseInt(searchParams.get('limit') || '10');
-    const fromDate = searchParams.get('fromDate');
 
-    const query: Record<string, unknown> = {
-      $and: [
-        {
-          $or: [
-            { target: { $in: [target, 'all'] } },
-            { audience: { $in: [target, 'all'] } }
-          ]
-        },
-        {
-          $or: [
-            { date: { $lte: new Date() } },
-            { timestamp: { $lte: new Date() } }
-          ]
-        }
-      ],
-    };
+    const query: Record<string, unknown> = {};
 
-    if (fromDate) {
-      query.date = { ...query.date as Record<string, unknown>, $gte: new Date(fromDate) };
+    // 'all' or no param = no audience filter, return everything
+    if (audience && audience.toLowerCase() !== 'all') {
+      query.audience = { $in: [audience.toLowerCase()] };
     }
 
-    const announcements = await db.collection<Announcement>('announcements')
+    const announcements = await db.collection('announcements')
       .find(query)
-      .sort({ date: -1, priority: -1 })
+      // timestamp is stored as a display string (e.g. "8/17/2026, 1:41:03 PM"), not chronologically
+      // sortable — _id embeds a creation-time timestamp, so it's a reliable proxy for "newest first"
+      .sort({ _id: -1 })
       .limit(limit)
       .toArray();
 
@@ -82,9 +70,11 @@ export async function POST(request: NextRequest) {
 
     const db = await getDb();
 
-    const newAnnouncement: Announcement = {
-      ...validation.data,
-      date: validation.data.date ? new Date(validation.data.date) : new Date(),
+    const newAnnouncement = {
+      title: validation.data.title,
+      content: validation.data.content,
+      audience: (validation.data.audience || ['all']).map((a: string) => a.toLowerCase()),
+      timestamp: new Date().toLocaleString(),
       views: 0,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -94,7 +84,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: { id: result.insertedId.toString(), ...newAnnouncement },
+      data: { _id: result.insertedId.toString(), ...newAnnouncement },
     });
   } catch (error) {
     console.error('Create announcement error:', error);
@@ -116,9 +106,14 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'ID is required' }, { status: 400 });
     }
 
+    // keep audience lowercase and array-shaped if it's part of the update
+    if (updateData.audience) {
+      updateData.audience = updateData.audience.map((a: string) => a.toLowerCase());
+    }
+
     const db = await getDb();
 
-    const result = await db.collection<Announcement>('announcements').updateOne(
+    const result = await db.collection('announcements').updateOne(
       { _id: new ObjectId(id) },
       { $set: { ...updateData, updatedAt: new Date() } }
     );
@@ -150,7 +145,7 @@ export async function PATCH(request: NextRequest) {
 
     const db = await getDb();
 
-    await db.collection<Announcement>('announcements').updateOne(
+    await db.collection('announcements').updateOne(
       { _id: new ObjectId(id) },
       { $inc: { views: 1 } }
     );

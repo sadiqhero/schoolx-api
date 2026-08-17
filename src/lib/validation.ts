@@ -26,12 +26,9 @@ export const studentSchema = z.object({
 });
 
 export const announcementSchema = z.object({
-  title: z.string().min(3, 'Title must be at least 3 characters'),
-  content: z.string().min(10, 'Content must be at least 10 characters'),
-  target: z.enum(['all', 'students', 'teachers', 'parents', 'class']).default('all'),
-  targetClass: z.string().optional(),
-  priority: z.number().min(0).max(10).default(0),
-  date: z.string().optional(),
+  title: z.string().min(1, 'Title is required'),
+  content: z.string().min(1, 'Content is required'),
+  audience: z.array(z.enum(['all', 'teachers', 'parents', 'students'])).min(1, 'At least one audience is required'),
 });
 
 export const attendanceSchema = z.object({

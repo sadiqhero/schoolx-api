@@ -26,14 +26,14 @@ export interface Student {
   updatedAt: Date;
 }
 
+
+
 export interface Announcement {
   _id?: ObjectId;
   title: string;
   content: string;
-  target: 'all' | 'students' | 'teachers' | 'parents' | 'class';
-  targetClass?: string;
-  priority: number;
-  date: Date;
+  audience: string[];
+  timestamp: string;
   views: number;
   createdAt: Date;
   updatedAt: Date;
