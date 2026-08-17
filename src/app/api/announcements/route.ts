@@ -22,13 +22,25 @@ export async function GET(request: NextRequest) {
     const db = await getDb();
     const searchParams = request.nextUrl.searchParams;
     
-    const target = searchParams.get('target') || 'all';
-    const limit = parseInt(searchParams.get('limit') || '20');
+    const target = searchParams.get('audience') || 'all';
+    const limit = parseInt(searchParams.get('limit') || '10');
     const fromDate = searchParams.get('fromDate');
 
     const query: Record<string, unknown> = {
-      target: { $in: [target, 'all'] },
-      date: { $lte: new Date() },
+      $and: [
+        {
+          $or: [
+            { target: { $in: [target, 'all'] } },
+            { audience: { $in: [target, 'all'] } }
+          ]
+        },
+        {
+          $or: [
+            { date: { $lte: new Date() } },
+            { timestamp: { $lte: new Date() } }
+          ]
+        }
+      ],
     };
 
     if (fromDate) {
